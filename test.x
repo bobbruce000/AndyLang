@@ -4,9 +4,27 @@
 //  This is a comment
 //
 
+
+if (1) {
+  Print(88);
+} else {
+  Print(99);
+}
+
+if (0) {
+  Print(44);
+} else {
+  Print(55);
+}
+
 AA = 3;
 BB = 5;
 CC = 7;
+
+Print(~0);
+
+Print(!0);
+Print(AA > BB);
 
 Print(AA);
 Print(BB);
@@ -44,4 +62,3 @@ Assert((0xff & ~0x55) == 0xaa);
 // Assert((2*5 - 10 ? 7 : 23) == 23);
 
 Assert(~0 == -1);
-

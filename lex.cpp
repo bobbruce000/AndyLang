@@ -25,13 +25,14 @@ lex_symbol(int c)
     const char *keyword;
     yy::parser::token::token_kind_type token;
   } keywords[] = {
-      //		{ "if",     TOK_IF },
       //		{ "while",  TOK_WHILE },
       //		{ "for",    TOK_FOR },
       //		{ "fn",     TOK_FN },
 		
-		{"Assert", TOK(ASSERT) },
-		{"Print",  TOK(PRINT) },
+		{ "if",     TOK(IF)     },
+		{ "else",   TOK(ELSE)   },
+		{ "Assert", TOK(ASSERT) },
+		{ "Print",  TOK(PRINT)  },
   };
   char *s = yytext;
   do {
@@ -100,7 +101,7 @@ yylex(void) {
     }
   }
   lex_backtrack(a);
-  if (strchr("(){}[];=+-*/%~&|:?", c)) {
+  if (strchr("!<>(){}[];=+-*/%~&|:?", c)) {
     return c;
   }
   if (isdigit(c) || ((c == '.') && isdigit(a))) {

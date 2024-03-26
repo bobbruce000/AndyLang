@@ -39,9 +39,9 @@ main(int argc, char **argv)
   yy::parser parse;
 	int p = parse();
 	if (p != 0) {
-		fatal("Parser error code: %d\n", p);
+		fatal("Parser error code: %d, line %d\n", p, yylineno);
 	}
-	if (1) {
+	if (0) {
 		printf("-------------------------------------\n");
 		Symbol::dumpList();
 		printf("-------------------------------------\n");

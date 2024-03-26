@@ -45,11 +45,17 @@ tokenToString(int token)
 		{ '|', "|" },
 		{ ':', ":" },
 		{ '?', "?" },
+		{ '!', "!" },
+		{ '<', "<" },
+		{ '>', ">" },
 #define _(t,s) { TOK(t), s }		
 		_(INTEGER_LITERAL, "Integer"),
 		_(PROGRAM,      "Program"),
+		_(STATEMENT_LIST, "Statement-List"),
 		_(PRINT,        "Print"),
 		_(ASSERT,       "Assert"),
+		_(IF,           "If"),
+		_(ELSE,         "Else"),
 		_(SYMBOL,       "Symbol"),
 		_(PLUS_EQ,      "+="),
 		_(MINUS_EQ,     "-="),
@@ -136,20 +142,46 @@ ParseNode::getParseNodeSymbolIndex(int pn)
 }
 
 int
-ParseNode::eval(int n)
+ParseNode::eval(int depth, int n)
 {
+	int vL;
+	int vR;
+
 	if (n == 0) {
 		return 0;
 	}
+
+	//printf("%*seval(%d) d=%d\n", 2*depth, "", n, depth);
+	
 	assert(n < NumParseNodes);
 	assert(n < ParseNode::count);
 	ParseNode *p = &parseNodes[n];
-	int vL = eval(p->left);
-	int vR = eval(p->right);
+
+	if (p->operand == TOK(ELSE)) {
+		ParseNode *pl = &parseNodes[p->left];
+		assert(pl->operand == TOK(IF));
+		if (eval(depth + 1, pl->left)) {
+			eval(depth + 1, pl->right);
+		} else {
+			eval(depth + 1, p->right);
+		}
+		return 0;
+	}
+	
+	if (p->operand == TOK(IF)) {
+		vL = eval(depth+1, p->left);
+		if (vL) {
+			eval(depth+1, p->right);
+		}
+		return 0;
+	}
+	vL = eval(depth+1, p->left);
+	vR = eval(depth+1, p->right);
 	switch (p->operand) {
 	case TOK(INTEGER_LITERAL): return p->intValue;
 	case TOK(SYMBOL):          return Symbol::getValue(p->intValue);
 	case TOK(PROGRAM):         return 0;
+	case TOK(STATEMENT_LIST):  return 0;
 	case TOK(PRINT):           printf("Print: %d\n", vL); return 0;
 	case TOK(ASSERT):          if (!vL) printf("Assert failed, line %d\n", p->intValue); return 0; // intValue is the linenum
 	case TOK(PLUS_EQ):         return 0; 
@@ -185,7 +217,7 @@ ParseNode::eval(int n)
 		printf("eval(pr->right)=%d\n", eval(pr->right));
 		*/
 
-		return vL ? eval(pr->left) : eval(pr->right);
+		return vL ? eval(depth+1, pr->left) : eval(depth+1, pr->right);
 	}
 
 		
@@ -195,8 +227,11 @@ ParseNode::eval(int n)
 	case '/':  return vL / vR;
 	case '%':  return vL % vR;
 	case '~':  return ~vR;
+	case '!':  return !vR;
 	case '&':  return vL & vR;
 	case '|':  return vL | vR;
+  case '<':  return vL < vR;
+  case '>':  return vL > vR;
 	case '-':  return (p->right == 0) ? -vR : vL - vR;
 	default: fatal("Bad operand in eval(): %d {%c}", p->operand, p->operand);
 	}
@@ -207,5 +242,5 @@ void
 ParseNode::evalParseTree(void)
 {
 	int top = ParseNode::count - 1;
-	eval(top);
+	eval(0, top);
 }

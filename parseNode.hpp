@@ -21,5 +21,5 @@ public:
 
 private:
 	static void dump(int depth, int n);
-	static int  eval(int n);
+	static int  eval(int depth, int n);
 };

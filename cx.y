@@ -21,6 +21,7 @@
 %token	<int>	TOK_INTEGER_LITERAL
 %token	<int>	TOK_SYMBOL
 %token  TOK_PROGRAM
+%token  TOK_STATEMENT_LIST
 %token  TOK_PRINT
 %token  TOK_ASSERT
 %token  TOK_PLUS_EQ
@@ -41,9 +42,15 @@
 %token  TOK_SHIFT_LEFT
 %token  TOK_PLUS_PLUS
 %token  TOK_MINUS_MINUS
+%token  TOK_IF
+%token  TOK_ELSE
 
 %type  <int>	program
+%type  <int>	block
+%type  <int>	statement_list
 %type  <int>	statement
+%type  <int>	if_statement
+%type  <int>	if_else_statement
 %type  <int>	assignment_statement
 %type  <int>	print_statement
 %type  <int>	assert_statement
@@ -72,14 +79,24 @@
 
 %%
 
-program: /* empty */ { $$ = PN(TOK(PROGRAM), 0, 0, 0); }
-| statement program  { $$ = PN(TOK(PROGRAM), 0, $1, $2); }
+program: statement_list { $$ = $1; };
+
+if_else_statement: if_statement TOK_ELSE block { $$ = PN(TOK(ELSE), 0, $1, $3); };
+
+if_statement: TOK_IF expression block { $$ = PN(TOK(IF), 0, $2, $3); };
+
+block: '{' statement_list '}'  { $$ = $2; };
+
+statement_list: /* empty */ { $$ = PN(TOK(STATEMENT_LIST), 0, 0, 0); }
+| statement statement_list  { $$ = PN(TOK(STATEMENT_LIST), 0, $1, $2); }
 ;
 
 statement:
   print_statement       { $$ = $1; }
 | assert_statement      { $$ = $1; }
 | assignment_statement  { $$ = $1; }
+| if_statement          { $$ = $1; }
+| if_else_statement     { $$ = $1; }	
 ;
 
 print_statement:      TOK_PRINT  '(' expression ')' ';' { $$ = PN(TOK(PRINT), 0, $3, 0); };
