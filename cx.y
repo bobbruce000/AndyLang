@@ -3,8 +3,8 @@
 %define api.value.type variant
 %define api.token.constructor
 %{
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "globals.hpp"
 #include "parseNode.hpp"	
 #include "lex.hpp"
@@ -100,7 +100,7 @@ statement:
 ;
 
 print_statement:      TOK_PRINT  '(' expression ')' ';' { $$ = PN(TOK(PRINT), 0, $3, 0); };
-assert_statement:     TOK_ASSERT '(' expression ')' ';' { $$ = PN(TOK(ASSERT), yylineno, $3, 0); };
+assert_statement:     TOK_ASSERT '(' expression ')' ';' { $$ = PN(TOK(ASSERT), g.yylineno, $3, 0); };
 assignment_statement: symbol '='     expression     ';' { $$ = PN('=', 0, $1, $3); };
   
 expression: ternary_exp { $$ = $1; };
@@ -180,5 +180,5 @@ symbol: TOK_SYMBOL    { $$ = PN(TOK(SYMBOL), $1, 0, 0); };
 
 auto yy::parser::error (const std::string& msg) -> void
 {
-  std::cerr << "error at line " << yylineno << " msg: " << msg  << '\n';
+  std::cerr << "error at line " << g.yylineno << " msg: " << msg  << '\n';
 }

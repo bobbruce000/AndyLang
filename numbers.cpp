@@ -7,8 +7,7 @@
 #include "numbers.hpp"
 #include "utils.hpp"
 
-yy::parser::symbol_type
-lex_hex_number(void) {
+yy::parser::symbol_type lex_hex_number(void) {
   char *s = g.yytext;
   for (;;) {
     int c = lex_next_char();
@@ -22,7 +21,7 @@ lex_hex_number(void) {
     lex_backtrack(c);
     *s = '\0';
     // yylval.int_val = strtol(yytext, NULL, 16);
-    return yy::parser::make_TOK_INTEGER_LITERAL(strtol(yytext, NULL, 16));
+    return yy::parser::make_TOK_INTEGER_LITERAL(strtol(g.yytext, NULL, 16));
   }
 }
 
@@ -39,7 +38,7 @@ yy::parser::symbol_type lex_octal_number(void) {
     }
     lex_backtrack(c);
     *s = '\0';
-    return yy::parser::make_TOK_INTEGER_LITERAL(strtol(yytext, NULL, 8));
+    return yy::parser::make_TOK_INTEGER_LITERAL(strtol(g.yytext, NULL, 8));
   }
 }
 
@@ -72,7 +71,7 @@ yy::parser::symbol_type lex_number(int c) {
       }
       lex_backtrack(c);
       *s = '\0';
-      return yy::parser::make_TOK_INTEGER_LITERAL(atoi(yytext));
+      return yy::parser::make_TOK_INTEGER_LITERAL(atoi(g.yytext));
     }
   }
 }

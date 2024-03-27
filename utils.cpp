@@ -1,17 +1,15 @@
 #include <cassert>
 #include <cerrno>
-#include <fcntl.h>
 #include <cstdarg>
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <fstream>
+#include <vector>
 
 #include "utils.hpp"
 
-void fatal(const char *const fmt, ...) {
+[[noreturn]] void fatal(const char *const fmt, ...) {
   va_list args;
 
   assert(fmt != NULL);
@@ -24,29 +22,13 @@ void fatal(const char *const fmt, ...) {
 
 const char *syserr(void) { return strerror(errno); }
 
-char *Readfile(const char *const fn, uint32_t *size) {
-  struct stat statbuf;
-  uint32_t filesize;
-  int32_t fd;
-  char *data;
-
-  if ((fd = open(fn, O_RDONLY)) < 0) {
-    fatal("Readfile: Cannot open %s: %s", fn, syserr());
+std::vector<char> Readfile(char *fn) {
+  std::ifstream stream = std::ifstream(fn, std::ios::binary);
+  if (stream) {
+    std::vector<char> buffer =
+        std::vector<char>(std::istreambuf_iterator<char>(stream), {});
+    buffer.push_back(0);
+    return buffer;
   }
-  if (fstat(fd, &statbuf) != 0) {
-    fatal("Cannot stat %s: %s", fn, syserr());
-  }
-  filesize = (size_t)statbuf.st_size;
-  // lint -e{925}        Cast from pointer to pointer
-  data = (char *)malloc(filesize + 1);
-  assert(data != NULL);
-  data[filesize] = '\0';
-  if (read(fd, data, (size_t)filesize) != (ssize_t)filesize) {
-    fatal("read error, %s: %s", fn, syserr());
-  }
-  close(fd);
-  if (size != NULL) {
-    *size = filesize;
-  }
-  return data;
+  fatal("failed to open file: %s\n", fn);
 }

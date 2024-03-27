@@ -6,5 +6,5 @@
   "libgccjit"
   "make"
   "bison"
-  "clang-toolchain"))
-
+  "clang-toolchain"
+  "valgrind"))

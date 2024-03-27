@@ -1,18 +1,17 @@
-#
-#  Makefile
-#
-
 CXX := clang++
 CXXFLAGS := -std=c++2b
-##CXXFLAGS += -O3
-CXXFLAGS += -g
+CXXFLAGS += -g 
 CXXFLAGS += -Wall -Wextra -Wpedantic -Weffc++
 CXXFLAGS += -Werror
+
+#bison catches exceptions which messes up the backtrace, so just make them all crash
+CXXFLAGS += -fno-exceptions 
+
 
 BFLAGS += --header -Wcounterexamples
 
 OBJS = main.o lex.o cx.tab.o numbers.o utils.o parseTree.o symbol.o
-HDRS = lex.hpp numbers.hpp utils.hpp cx.tab.hh symbol.hpp parseNode.hpp
+HDRS = *.hpp cx.tab.hh
 
 cx: ${OBJS}
 	${CXX} ${CXXFLAGS} $^ -o $@
