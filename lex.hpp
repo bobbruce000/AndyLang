@@ -1,5 +1,5 @@
 #include "cx.tab.hh"
 
-int lex_next_char(void);
-void lex_backtrack(int c);
+char lex_next_char(void);
+void lex_backtrack(char c);
 yy::parser::symbol_type yylex();

@@ -1,10 +1,10 @@
 CXX := clang++
-CXXFLAGS := -std=c++2b
+CXXFLAGS := -std=c++23
 CXXFLAGS += -g 
 CXXFLAGS += -Wall -Wextra -Wpedantic -Weffc++
 CXXFLAGS += -Werror
 
-#bison catches exceptions which messes up the backtrace, so just make them all crash
+#bison catches exceptions in yylex() which messes up the backtrace, so just make them all crash so we can see where the errors come from
 CXXFLAGS += -fno-exceptions 
 
 
@@ -20,6 +20,8 @@ main.o: main.cpp ${HDRS}
 lex.o: lex.cpp ${HDRS}
 numbers.o: numbers.cpp ${HDRS}
 utils.o: utils.cpp ${HDRS}
+parseTree.o: parseTree.cpp ${HDRS}
+symbol.o: symbol.cpp ${HDRS}
 
 cx.tab.o: cx.tab.cc ${HDRS}
 	${CXX} ${CXXFLAGS} -Wno-unused-but-set-variable -c $<

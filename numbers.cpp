@@ -42,8 +42,8 @@ yy::parser::symbol_type lex_octal_number(void) {
   }
 }
 
-yy::parser::symbol_type lex_number(int c) {
-  // int is_float = 0;
+yy::parser::symbol_type lex_number(char c) {
+
   char *s = g.yytext;
   *s++ = c;
   if (c == '.') {
