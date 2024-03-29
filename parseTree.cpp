@@ -18,23 +18,7 @@ Expression::Expression(FunctionApplication const &func)
 : value{std::unique_ptr<const FunctionApplication>(new FunctionApplication(func))} {}
 Expression::Expression() : value{Identifier()} {}
 Expression::Expression(Expression const &other) : value{Identifier()} {
-  std::visit(
-      [this](const auto &var) {
-        using T = std::decay_t<decltype(var)>;
-        if constexpr (std::is_same_v<T, Identifier>) {
-          this->value = var;
-        } else if constexpr (std::is_same_v<T, int>) {
-          this->value = var;
-        } else if constexpr (std::is_same_v<
-                                 T,
-                                 std::unique_ptr<const FunctionApplication>>) {
-          this->value = std::unique_ptr<const FunctionApplication>(
-              new FunctionApplication(*var));
-        } else {
-          assert(false);
-        }
-      },
-      other.value);
+  *this = other;
 }
 
 Expression &Expression::operator=(const Expression &other) {
