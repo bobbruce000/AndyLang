@@ -1,51 +1,52 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
 
-class NodeExpression;
+class FunctionApplication;
 
-class NodeExpressionListAtLeastOne {
+class Identifier {
 public:
-  NodeExpressionListAtLeastOne();
-  NodeExpressionListAtLeastOne(NodeExpression &first);
-  NodeExpressionListAtLeastOne(NodeExpressionListAtLeastOne &rest,
-                               NodeExpression last);
-  void printExpressionList(void);
-private:
-  std::vector<NodeExpression> list;
-};
-
-class LeafIdentifier {
-public:
-  LeafIdentifier();
-  LeafIdentifier(std::string ident_name);
-  //LeafIdentifier(LeafIdentifier const& copy);
+  Identifier();
+  Identifier(std::string ident_name);
   std::string name;
-  //LeafIdentifier& operator=(const LeafIdentifier&);
+  
 };
 
-class NodeExpression {
+class Expression {
 public:
-  NodeExpression();
-  NodeExpression(LeafIdentifier &ident);
-  NodeExpression(int integer_literal);
-  NodeExpression(NodeExpressionListAtLeastOne &list);
-  void printExpression(void);
-  
+  Expression();
+  Expression(Identifier &ident);
+  Expression(int integer_literal);
+  Expression(FunctionApplication const& func);
+  void printExpression(void) const;
+  Expression(Expression const& copy);
+  Expression& operator=(const Expression& other);
 private:
-  std::variant<LeafIdentifier, int, NodeExpressionListAtLeastOne> value;
+  std::variant<Identifier, int, std::unique_ptr<const FunctionApplication>> value;
   //static void dump(int depth, int n);
   //static int eval(int depth, int n);
 };
 
-class NodeProgramRoot {
+class FunctionApplication {
 public:
-  NodeProgramRoot();
-  NodeProgramRoot(NodeExpression &root_expression);
+  FunctionApplication();
+  //FunctionApplication(FunctionApplication& copy);
+  FunctionApplication(Expression &function_expr, Expression &object_expr);
+  void printFunctionApplication(void) const;
+private:
+  Expression function;
+  Expression argument;
+};
+
+class ProgramRoot {
+public:
+  ProgramRoot();
+  ProgramRoot(Expression &root_expression);
   void printTree(void);
 private:
-  NodeExpression expression;
+  Expression expression;
 };
 
 

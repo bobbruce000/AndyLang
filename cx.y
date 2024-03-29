@@ -19,25 +19,22 @@
 %start	program
 
 %token	<int>	TOK_INTEGER_LITERAL
-%token	<LeafIdentifier>   TOK_IDENTIFIER
+%token	<Identifier>   TOK_IDENTIFIER
 
-%type  <NodeExpressionListAtLeastOne> at_least_one_expression_list
-%type  <NodeExpression> expression
+%type  <Expression> function_application
+%type  <Expression> expression
 
 
 %%
-
-program: expression { g.parseTree = new NodeProgramRoot($1); };
+program: expression { g.parseTree = new ProgramRoot($1); };
 
 expression:
-  TOK_IDENTIFIER                        { $$ = NodeExpression($1); }
-| TOK_INTEGER_LITERAL                   { $$ = NodeExpression($1); }
-| '(' at_least_one_expression_list ')'  { $$ = NodeExpression($2); }
+  TOK_IDENTIFIER        { $$ = Expression($1); }
+| TOK_INTEGER_LITERAL   { $$ = Expression($1); }
+| function_application  { $$ = $1; }
 
-at_least_one_expression_list:
-  expression                              { $$ = NodeExpressionListAtLeastOne($1); }
-| at_least_one_expression_list expression { $$ = NodeExpressionListAtLeastOne($1, $2); }
-	
+function_application:
+'(' expression expression ')'  { $$ = Expression(FunctionApplication($2, $3)); }
 %%
 
 void yy::parser::error (const std::string& msg)

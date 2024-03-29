@@ -1,65 +1,99 @@
-//
-//  parseTree.cpp
-//
 #include "parseTree.hpp"
 #include "globals.hpp"
 #include "symbol.hpp"
 #include "utils.hpp"
+#include <cassert>
 
-//?????
-//https://en.cppreference.com/w/cpp/utility/variant/visit
-template <class... Ts> struct overloaded : Ts... {
-  using Ts::operator()...;
-};
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-NodeProgramRoot::NodeProgramRoot(NodeExpression &root_expression)
+ProgramRoot::ProgramRoot(Expression &root_expression)
     : expression{root_expression} {}
-NodeProgramRoot::NodeProgramRoot() {}
+ProgramRoot::ProgramRoot() {}
 
-NodeExpressionListAtLeastOne::NodeExpressionListAtLeastOne(
-    NodeExpression &first)
-    : list{first} {}
-NodeExpressionListAtLeastOne::NodeExpressionListAtLeastOne(
-    NodeExpressionListAtLeastOne &rest, NodeExpression last)
-    : list{rest.list} {
-  this->list.push_back(last);
+Identifier::Identifier(std::string ident_name) : name{ident_name} {}
+Identifier::Identifier() : name{"__BAD_UNINITILAIZED"} {}
+
+Expression::Expression(Identifier &ident) : value{ident} {}
+Expression::Expression(int integer_literal) : value{integer_literal} {}
+
+Expression::Expression(FunctionApplication const &func)
+: value{std::unique_ptr<const FunctionApplication>(new FunctionApplication(func))} {}
+Expression::Expression() : value{Identifier()} {}
+Expression::Expression(Expression const &other) : value{Identifier()} {
+  std::visit(
+      [this](const auto &var) {
+        using T = std::decay_t<decltype(var)>;
+        if constexpr (std::is_same_v<T, Identifier>) {
+          this->value = var;
+        } else if constexpr (std::is_same_v<T, int>) {
+          this->value = var;
+        } else if constexpr (std::is_same_v<
+                                 T,
+                                 std::unique_ptr<const FunctionApplication>>) {
+          this->value = std::unique_ptr<const FunctionApplication>(
+              new FunctionApplication(*var));
+        } else {
+          assert(false);
+        }
+      },
+      other.value);
 }
-NodeExpressionListAtLeastOne::NodeExpressionListAtLeastOne()
-    : list{NodeExpression()} {}
 
-LeafIdentifier::LeafIdentifier(std::string ident_name) : name{ident_name} {}
-LeafIdentifier::LeafIdentifier() : name{"__BAD_UNINITILAIZED"} {}
-
-NodeExpression::NodeExpression(LeafIdentifier &ident) : value{ident} {}
-NodeExpression::NodeExpression(int integer_literal) : value{integer_literal} {}
-
-NodeExpression::NodeExpression(NodeExpressionListAtLeastOne &list)
-    : value{list} {}
-NodeExpression::NodeExpression() : value{LeafIdentifier()} {}
-
-void NodeProgramRoot::printTree(void) { this->expression.printExpression(); printf("\n"); }
-void NodeExpression::printExpression(void) {
-  std::visit(overloaded{
-                 [](LeafIdentifier arg) { printf("%s ", arg.name.c_str()); },
-                 [](int arg) { printf("%d ", arg); },
-                 [](NodeExpressionListAtLeastOne arg) {
-                   (void)arg;
-		   arg.printExpressionList();
-                 },
-             },
-             this->value);
+Expression &Expression::operator=(const Expression &other) {
+  std::visit(
+      [this](const auto &var) {
+        using T = std::decay_t<decltype(var)>;
+        if constexpr (std::is_same_v<T, Identifier>) {
+          this->value = var;
+        } else if constexpr (std::is_same_v<T, int>) {
+          this->value = var;
+        } else if constexpr (std::is_same_v<
+                                 T,
+                                 std::unique_ptr<const FunctionApplication>>) {
+          this->value = std::unique_ptr<const FunctionApplication>(
+              new FunctionApplication(*var));
+        } else {
+          assert(false);
+        }
+      },
+	     other.value);
+  
+  return *this;
 }
-void NodeExpressionListAtLeastOne::printExpressionList(void) {
+
+void ProgramRoot::printTree(void) {
+  this->expression.printExpression();
+  printf("\n");
+}
+void Expression::printExpression(void) const {
+  std::visit(
+      [this](const auto &var) {
+        using T = std::decay_t<decltype(var)>;
+        if constexpr (std::is_same_v<T, Identifier>) {
+          printf("%s", std::get<0>(value).name.c_str());
+        } else if constexpr (std::is_same_v<T, int>) {
+          printf("%d", std::get<1>(value));
+        } else if constexpr (std::is_same_v<
+                                 T,
+                                 std::unique_ptr<const FunctionApplication>>) {
+          std::get<2>(value)->printFunctionApplication();
+        } else {
+          assert(false);
+        }
+      },
+      this->value);
+}
+FunctionApplication::FunctionApplication(Expression &function_expr,
+                                         Expression &object_expr)
+    : function{function_expr}, argument{object_expr} {}
+
+void FunctionApplication::printFunctionApplication(void) const {
   printf("(");
-  for (auto v: this->list){
-    v.printExpression();
-  }
+  this->function.printExpression();
+  printf(" ");
+  this->argument.printExpression();
   printf(")");
 }
 
-
-// int ParseNode::count = 1; // Node zero is unused.
+// int Parse::count = 1; // Node zero is unused.
 
 // static ParseNode parseNodes[ParseNode::NumParseNodes];
 
